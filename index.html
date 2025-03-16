@@ -39,67 +39,66 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const firebaseConfig = {
-            apiKey: "AIzaSyBriiZfaS2hU1qYBsyJEYs13bK-UcdrsXc",
-            authDomain: "royalstar-chat.firebaseapp.com",
-            projectId: "royalstar-chat",
-            storageBucket: "royalstar-chat.firebasestorage.app",
-            messagingSenderId: "847429163840",
-            appId: "1:847429163840:web:7d2d9ea561de6c957338a5"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBriiZfaS2hU1qYBsyJEYs13bK-UcdrsXc",
+        authDomain: "royalstar-chat.firebaseapp.com",
+        projectId: "royalstar-chat",
+        storageBucket: "royalstar-chat.firebasestorage.app",
+        messagingSenderId: "847429163840",
+        appId: "1:847429163840:web:7d2d9ea561de6c957338a5"
+    };
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-        async function registerUser() {
-            let email = document.getElementById("email").value;
-            let password = document.getElementById("password").value;
-            let username = email.split("@")[0]; 
-            let profilePic = "default-profile.png";
+    async function registerUser() {
+        let email = document.getElementById("email").value;
+        let password = document.getElementById("password").value;
+        let username = email.split("@")[0]; 
+        let profilePic = "default-profile.png";
+        
+        try {
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
             
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-                
-                await db.collection("users").doc(user.uid).set({
-                    username: username,
-                    email: email,
-                    profilePic: profilePic,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                alert("Registration Successful!");
-            } catch (error) {
-                alert(error.message);
-            }
+            await db.collection("users").doc(user.uid).set({
+                username: username,
+                email: email,
+                profilePic: profilePic,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("Registration Successful!");
+        } catch (error) {
+            alert(error.message);
         }
+    }
 
-        async function loginUser() {
-            let email = document.getElementById("email").value;
-            let password = document.getElementById("password").value;
-            
-            try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                document.getElementById("login-section").classList.add("d-none");
-                document.getElementById("chat-section").classList.remove("d-none");
-                document.getElementById("user-email").textContent = userCredential.user.email;
-            } catch (error) {
-                alert(error.message);
-            }
+    async function loginUser() {
+        let email = document.getElementById("email").value;
+        let password = document.getElementById("password").value;
+        
+        try {
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            document.getElementById("login-section").classList.add("d-none");
+            document.getElementById("chat-section").classList.remove("d-none");
+            document.getElementById("user-email").textContent = userCredential.user.email;
+        } catch (error) {
+            alert(error.message);
         }
+    }
 
-        async function logoutUser() {
-            await auth.signOut();
-            document.getElementById("login-section").classList.remove("d-none");
-            document.getElementById("chat-section").classList.add("d-none");
-        }
+    async function logoutUser() {
+        await auth.signOut();
+        document.getElementById("login-section").classList.remove("d-none");
+        document.getElementById("chat-section").classList.add("d-none");
+    }
 
-        window.registerUser = registerUser;
-        window.loginUser = loginUser;
-        window.logoutUser = logoutUser;
-    });
+    window.registerUser = registerUser;
+    window.loginUser = loginUser;
+    window.logoutUser = logoutUser;
 </script>
 </body>
 </html>
+
 
