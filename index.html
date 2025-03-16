@@ -7,28 +7,19 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            text-align: center;
             background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
         }
-        
+
         #chat-app {
             background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
             width: 300px;
+            margin: 50px auto;
         }
-        
-        h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
+
         input {
             width: calc(100% - 20px);
             padding: 10px;
@@ -36,28 +27,28 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        
+
         button {
             width: 100%;
             padding: 10px;
-            margin: 5px 0;
             border: none;
             border-radius: 5px;
             background: #007bff;
             color: white;
             cursor: pointer;
             font-size: 16px;
+            margin-top: 5px;
         }
-        
+
         button:hover {
             background: #0056b3;
         }
-        
+
         #chat-section {
             margin-top: 20px;
             display: none;
         }
-        
+
         #messages {
             list-style: none;
             padding: 0;
@@ -69,12 +60,12 @@
             padding: 10px;
             text-align: left;
         }
-        
+
         #messages li {
             padding: 5px;
             border-bottom: 1px solid #ddd;
         }
-        
+
         #messages li:last-child {
             border-bottom: none;
         }
@@ -93,9 +84,69 @@
             <ul id="messages"></ul>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        const API_URL = "http://localhost:5000";
+
+        async function registerUser() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            const response = await fetch(`${API_URL}/auth/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+        }
+
+        async function loginUser() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+
+            if (data.token) {
+                localStorage.setItem("token", data.token);
+                document.getElementById("chat-section").style.display = "block";
+            }
+        }
+
+        async function sendMessage() {
+            const message = document.getElementById("message").value;
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("You must log in first.");
+                return;
+            }
+
+            const response = await fetch(`${API_URL}/chat/send`, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await response.json();
+            if (data.message === "Message sent successfully") {
+                document.getElementById("messages").innerHTML += `<li><b>You:</b> ${message}</li>`;
+                document.getElementById("message").value = "";
+            }
+        }
+    </script>
 </body>
 </html>
-
 
 
