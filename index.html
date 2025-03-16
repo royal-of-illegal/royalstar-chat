@@ -86,38 +86,58 @@
     </div>
 
     <script>
-        const API_URL = "http://localhost:5000";
+        const API_URL = "http://localhost:5000"; // Change this to your backend address
 
         async function registerUser() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
 
-            const response = await fetch(`${API_URL}/auth/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-            });
+            if (!username || !password) {
+                alert("Please enter a username and password.");
+                return;
+            }
 
-            const data = await response.json();
-            alert(data.message);
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Registration failed. Make sure the backend is running.");
+            }
         }
 
         async function loginUser() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
 
-            const response = await fetch(`${API_URL}/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-            });
+            if (!username || !password) {
+                alert("Please enter a username and password.");
+                return;
+            }
 
-            const data = await response.json();
-            alert(data.message);
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
 
-            if (data.token) {
-                localStorage.setItem("token", data.token);
-                document.getElementById("chat-section").style.display = "block";
+                const data = await response.json();
+                alert(data.message);
+
+                if (data.token) {
+                    localStorage.setItem("token", data.token);
+                    document.getElementById("chat-section").style.display = "block";
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Login failed. Check the console for errors.");
             }
         }
 
@@ -130,23 +150,27 @@
                 return;
             }
 
-            const response = await fetch(`${API_URL}/chat/send`, {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({ message })
-            });
+            try {
+                const response = await fetch(`${API_URL}/chat/send`, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ message })
+                });
 
-            const data = await response.json();
-            if (data.message === "Message sent successfully") {
-                document.getElementById("messages").innerHTML += `<li><b>You:</b> ${message}</li>`;
-                document.getElementById("message").value = "";
+                const data = await response.json();
+                if (data.message === "Message sent successfully") {
+                    document.getElementById("messages").innerHTML += `<li><b>You:</b> ${message}</li>`;
+                    document.getElementById("message").value = "";
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to send message.");
             }
         }
     </script>
 </body>
 </html>
-
 
