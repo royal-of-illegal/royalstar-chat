@@ -20,6 +20,9 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -27,12 +30,13 @@
 <div class="container text-center">
     <h3 class="mb-3">ROYALSTAR Chat</h3>
     <div id="login-section">
-        <input type="email" id="email" class="form-control mb-2" placeholder="Email">
-        <input type="password" id="password" class="form-control mb-2" placeholder="Password">
+        <input type="email" id="email" class="form-control mb-2" placeholder="Email" required>
+        <input type="password" id="password" class="form-control mb-2" placeholder="Password" required>
         <button class="btn btn-primary w-100 mb-2" onclick="loginUser()">Login</button>
         <button class="btn btn-secondary w-100" onclick="registerUser()">Register</button>
+        <p id="error-message" class="text-danger hidden"></p>
     </div>
-    <div id="chat-section" class="d-none">
+    <div id="chat-section" class="hidden">
         <h4>Welcome <span id="user-email"></span></h4>
         <button class="btn btn-danger w-100" onclick="logoutUser()">Logout</button>
     </div>
@@ -52,51 +56,66 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    async function registerUser() {
-        let email = document.getElementById("email").value;
-        let password = document.getElementById("password").value;
-        let username = email.split("@")[0]; 
-        let profilePic = "default-profile.png";
+    function registerUser() {
+        let email = document.getElementById("email").value.trim();
+        let password = document.getElementById("password").value.trim();
+        let errorMessage = document.getElementById("error-message");
+        errorMessage.classList.add("hidden");
         
-        try {
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-            
-            await db.collection("users").doc(user.uid).set({
-                username: username,
-                email: email,
-                profilePic: profilePic,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        if (!email || !password) {
+            errorMessage.textContent = "Please enter both email and password.";
+            errorMessage.classList.remove("hidden");
+            return;
+        }
+        
+        auth.createUserWithEmailAndPassword(email, password)
+            .then(userCredential => {
+                return db.collection("users").doc(userCredential.user.uid).set({
+                    username: email.split("@")[0],
+                    email: email,
+                    profilePic: "default-profile.png",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            })
+            .then(() => {
+                alert("Registration Successful! Please log in.");
+            })
+            .catch(error => {
+                errorMessage.textContent = error.message;
+                errorMessage.classList.remove("hidden");
             });
-            alert("Registration Successful!");
-        } catch (error) {
-            alert(error.message);
-        }
     }
 
-    async function loginUser() {
-        let email = document.getElementById("email").value;
-        let password = document.getElementById("password").value;
+    function loginUser() {
+        let email = document.getElementById("email").value.trim();
+        let password = document.getElementById("password").value.trim();
+        let errorMessage = document.getElementById("error-message");
+        errorMessage.classList.add("hidden");
         
-        try {
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            document.getElementById("login-section").classList.add("d-none");
-            document.getElementById("chat-section").classList.remove("d-none");
-            document.getElementById("user-email").textContent = userCredential.user.email;
-        } catch (error) {
-            alert(error.message);
+        if (!email || !password) {
+            errorMessage.textContent = "Please enter both email and password.";
+            errorMessage.classList.remove("hidden");
+            return;
         }
+        
+        auth.signInWithEmailAndPassword(email, password)
+            .then(userCredential => {
+                document.getElementById("login-section").classList.add("hidden");
+                document.getElementById("chat-section").classList.remove("hidden");
+                document.getElementById("user-email").textContent = userCredential.user.email;
+            })
+            .catch(error => {
+                errorMessage.textContent = error.message;
+                errorMessage.classList.remove("hidden");
+            });
     }
 
-    async function logoutUser() {
-        await auth.signOut();
-        document.getElementById("login-section").classList.remove("d-none");
-        document.getElementById("chat-section").classList.add("d-none");
+    function logoutUser() {
+        auth.signOut().then(() => {
+            document.getElementById("login-section").classList.remove("hidden");
+            document.getElementById("chat-section").classList.add("hidden");
+        });
     }
-
-    window.registerUser = registerUser;
-    window.loginUser = loginUser;
-    window.logoutUser = logoutUser;
 </script>
 </body>
 </html>
