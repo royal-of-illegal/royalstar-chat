@@ -4,6 +4,7 @@ const router = express.Router();
 
 router.post("/send", (req, res) => {
     const { sender, receiver, message } = req.body;
+
     db.query("INSERT INTO messages (sender, receiver, message) VALUES (?, ?, ?)", [sender, receiver, message],
         (err) => {
             if (err) return res.status(500).json({ message: "Message failed to send" });
@@ -18,4 +19,5 @@ router.get("/messages", (req, res) => {
         res.json(results);
     });
 });
+
 module.exports = router;
